@@ -2,20 +2,18 @@
 
 **rusno** is a self-hosted deployment manager written in Rust. It runs `docker compose` stacks on your host, exposes a web dashboard to register and manage projects, receives GitHub webhooks (or plain HTTP POSTs) for automatic deployment, and gives you per-project control over compose files, env files, branches, rollbacks, and host hygiene.
 
-## Quick start
+## Install
 
 ```bash
-# install the pinned toolchain
-mise install
-
-# initialize rusno (creates ~/.rusno/ with config, dirs, and database)
-cargo run -- init
-
-# start the server
-cargo run -- serve
+docker run -d --name rusno --restart unless-stopped \
+  -p 6967:6967 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ~/.rusno:/root/.rusno \
+  -v ~/rusno/projects:/root/rusno/projects \
+  ghcr.io/kodin00/rusno:latest
 ```
 
-Then visit `http://localhost:6967` — you'll be redirected to the first-run setup wizard.
+Then visit `http://localhost:6967` — you'll be redirected to the first-run setup wizard. See [docs/install.md](./docs/install.md) for the bare-metal (binary + systemd) variant and bind-mount details.
 
 ## What it does
 

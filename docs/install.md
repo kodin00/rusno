@@ -39,9 +39,22 @@ cargo build --release
 
 ## Variant (b): Dockerized rusno
 
+An image is published to GitHub Container Registry on every push to `master` and on tagged releases:
+
+```bash
+docker run -d --name rusno --restart unless-stopped \
+  -p 6967:6967 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ~/.rusno:/root/.rusno \
+  -v ~/rusno/projects:/root/rusno/projects \
+  -v ~/.ssh:/root/.ssh:ro \
+  ghcr.io/kodin00/rusno:latest
+```
+
+To build locally instead:
+
 ```bash
 docker build -t rusno .
-
 docker run -d \
   -p 6967:6967 \
   -v /var/run/docker.sock:/var/run/docker.sock \

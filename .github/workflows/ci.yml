@@ -3,24 +3,20 @@ name: CI
 on:
   push:
     branches: [main, master]
+    tags: ['v*']
   pull_request:
     branches: [main, master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          - x86_64-unknown-linux-gnu
-          - aarch64-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: x86_64-unknown-linux-gnu
           components: clippy, rustfmt
 
       - name: Install mise
@@ -33,7 +29,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('Cargo.lock') }}
+          key: ${{ runner.os }}-x86_64-unknown-linux-gnu-cargo-${{ hashFiles('Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --check
@@ -42,7 +38,7 @@ jobs:
         run: cargo clippy -- -D warnings
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target x86_64-unknown-linux-gnu
 
       - name: Run tests
         run: cargo test
@@ -51,33 +47,65 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-gnu
-            archive: rusno-x86_64-linux
-          - target: aarch64-unknown-linux-gnu
-            archive: rusno-aarch64-linux
-          - target: aarch64-apple-darwin
-            archive: rusno-aarch64-darwin
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: x86_64-unknown-linux-gnu
 
       - name: Build release
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target x86_64-unknown-linux-gnu
 
       - name: Archive
         run: |
-          tar czf ${{ matrix.archive }}.tar.gz \
-            -C target/${{ matrix.target }}/release rusno \
+          tar czf rusno-x86_64-linux.tar.gz \
+            -C target/x86_64-unknown-linux-gnu/release rusno \
             deploy/rusno.service install.sh
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.archive }}.tar.gz
+          files: rusno-x86_64-linux.tar.gz
+
+  publish:
+    needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
