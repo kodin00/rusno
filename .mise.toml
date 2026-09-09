@@ -1,0 +1,10 @@
+[tools]
+rust = "1.97.0"
+"cargo:cargo-watch" = "latest"
+"cargo:sqlx-cli" = "latest"
+"cargo:cargo-edit" = "latest"
+"cargo:cargo-audit" = "latest"
+
+[env]
+DATABASE_URL = "sqlite://{{ env.HOME }}/.rusno/rusno.db"
+RUST_LOG = "rusno=debug,info"

@@ -1,0 +1,25 @@
+[Unit]
+Description=rusno — self-hosted deployment manager
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=simple
+# Change this to the user that should own rusno and have docker group access:
+User=REPLACE_USER
+Group=docker
+ExecStart=/usr/local/bin/rusno serve --port 6967
+Restart=on-failure
+RestartSec=5
+# Rusno home directory (config, db, keys, ssh)
+Environment=RUSNO_HOME=%h/.rusno
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=tmpfs
+ReadWritePaths=%h/.rusno %h/rusno/projects
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
