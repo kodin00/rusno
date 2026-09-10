@@ -1,70 +1,43 @@
-name: CI
+name: release
 
 on:
   push:
-    branches: [main, master]
-    tags: ['v*']
-  pull_request:
-    branches: [main, master]
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-gnu
-          components: clippy, rustfmt
-
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-x86_64-unknown-linux-gnu-cargo-${{ hashFiles('Cargo.lock') }}
-
-      - name: Check formatting
-        run: cargo fmt --check
-
-      - name: Clippy
-        run: cargo clippy -- -D warnings
-
-      - name: Build
-        run: cargo build --release --target x86_64-unknown-linux-gnu
-
-      - name: Run tests
-        run: cargo test
-
   release:
-    needs: build
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    name: build & publish
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-gnu
 
-      - name: Build release
+      - name: Build (x86_64)
         run: cargo build --release --target x86_64-unknown-linux-gnu
 
-      - name: Package binary
-        run: tar czf rusno-x86_64-linux.tar.gz -C target/x86_64-unknown-linux-gnu/release rusno
+      - name: Stage assets
+        run: |
+          mkdir -p dist
+          cp target/x86_64-unknown-linux-gnu/release/rusno dist/rusno-linux-x86_64
+          sed "s|__REPO__|${{ github.repository }}|g" install.sh > dist/install.sh
+          chmod +x dist/install.sh
+          (cd dist && sha256sum rusno-linux-x86_64 > SHA256SUMS)
 
-      - name: Publish latest package
-        uses: softprops/action-gh-release@v2
-        with:
-          files: rusno-x86_64-linux.tar.gz
-          tag_name: latest
-          name: Latest Build
-          body: Latest build from master (${{ github.sha }})
-          prerelease: true
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
+          gh release create latest dist/* \
+            --title "rusno v${version}" \
+            --notes "rusno ${version}, built from $(git rev-parse --short HEAD)." \
+            --target "$GITHUB_SHA"
