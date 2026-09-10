@@ -4,10 +4,9 @@
 //! All handlers sit behind the auth middleware (see `routes::build_router`),
 //! so a valid session is guaranteed and the CSRF token is checked on POSTs.
 
-
 use axum::extract::{Form, Request, State};
-use axum::response::{IntoResponse, Redirect, Response};
 use axum::http::{header, HeaderValue};
+use axum::response::{IntoResponse, Redirect, Response};
 use maud::{html, Markup};
 use serde::Deserialize;
 use tracing::warn;
@@ -242,18 +241,12 @@ pub async fn save_github_token(
 ) -> Response {
     if form.token.trim().is_empty() {
         // An empty submission is treated as a removal.
-        let _ = state
-            .db
-            .set_setting("github_token_encrypted", "")
-            .await;
+        let _ = state.db.set_setting("github_token_encrypted", "").await;
         return Redirect::to("/settings").into_response();
     }
     match state.master_key.encrypt(form.token.as_bytes()) {
         Ok(enc) => {
-            let _ = state
-                .db
-                .set_setting("github_token_encrypted", &enc)
-                .await;
+            let _ = state.db.set_setting("github_token_encrypted", &enc).await;
         }
         Err(e) => {
             warn!(error = %e, "failed to encrypt github token");
@@ -265,10 +258,7 @@ pub async fn save_github_token(
 
 /// POST /settings/github-token/remove — delete the stored GitHub token.
 pub async fn remove_github_token(State(state): State<AppState>) -> Response {
-    let _ = state
-        .db
-        .set_setting("github_token_encrypted", "")
-        .await;
+    let _ = state.db.set_setting("github_token_encrypted", "").await;
     Redirect::to("/settings").into_response()
 }
 
@@ -352,9 +342,7 @@ pub async fn sign_out_everywhere(State(state): State<AppState>) -> Response {
     let mut resp = Redirect::to("/login").into_response();
     resp.headers_mut().insert(
         header::SET_COOKIE,
-        HeaderValue::from_static(
-            "rusno_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
-        ),
+        HeaderValue::from_static("rusno_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"),
     );
     resp
 }

@@ -15,15 +15,9 @@ use crate::deploy::worker::WorkerContext;
 #[derive(Debug, Clone)]
 pub enum DeployRequest {
     /// Normal deploy: fetch + checkout branch + pull + compose up.
-    Normal {
-        project_id: i64,
-        trigger: String,
-    },
+    Normal { project_id: i64, trigger: String },
     /// Rollback: fetch + checkout specific commit + compose up.
-    Rollback {
-        project_id: i64,
-        commit_sha: String,
-    },
+    Rollback { project_id: i64, commit_sha: String },
 }
 
 /// Global deploy scheduler + per-project single-worker dispatch.

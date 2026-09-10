@@ -68,10 +68,7 @@ pub async fn get_setup(State(state): State<AppState>) -> Response {
 /// * Redirects back to `/setup` if the passwords don't match.
 /// * Hashes with argon2, stores as `admin_password_hash`.
 /// * Ensures a `session_secret` exists (32 random bytes, base64url).
-pub async fn post_setup(
-    State(state): State<AppState>,
-    Form(form): Form<SetupForm>,
-) -> Response {
+pub async fn post_setup(State(state): State<AppState>, Form(form): Form<SetupForm>) -> Response {
     // Never allow re-running setup over an existing password.
     if let Ok(Some(_)) = state.db.get_setting("admin_password_hash").await {
         return Redirect::to("/login").into_response();
@@ -126,10 +123,7 @@ pub async fn get_login(State(state): State<AppState>) -> Response {
 /// `/`. On failure, re-renders the login page with an error alert. A missing
 /// password hash or session secret is treated as a redirect to `/setup`
 /// (the secret is generated on the fly if it was somehow lost).
-pub async fn post_login(
-    State(state): State<AppState>,
-    Form(form): Form<LoginForm>,
-) -> Response {
+pub async fn post_login(State(state): State<AppState>, Form(form): Form<LoginForm>) -> Response {
     let hash = match state.db.get_setting("admin_password_hash").await {
         Ok(Some(h)) => h,
         _ => return Redirect::to("/setup").into_response(),
@@ -153,8 +147,7 @@ pub async fn post_login(
         }
     };
 
-    let (signed_value, _csrf_token) = match auth::create_session(&state.db, &session_secret).await
-    {
+    let (signed_value, _csrf_token) = match auth::create_session(&state.db, &session_secret).await {
         Ok(v) => v,
         Err(e) => {
             tracing::error!("failed to create session: {e:#}");

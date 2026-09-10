@@ -221,7 +221,9 @@ fn relative_time(ts: &str) -> String {
         Err(_) => return ts.to_string(),
     };
 
-    let secs = chrono::Utc::now().signed_duration_since(parsed).num_seconds();
+    let secs = chrono::Utc::now()
+        .signed_duration_since(parsed)
+        .num_seconds();
     if secs < 0 {
         return ts.to_string();
     }

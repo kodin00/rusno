@@ -13,7 +13,12 @@ pub struct Session {
 }
 
 impl Db {
-    pub async fn create_session(&self, session_id: &str, csrf_token: &str, ttl_secs: i64) -> anyhow::Result<()> {
+    pub async fn create_session(
+        &self,
+        session_id: &str,
+        csrf_token: &str,
+        ttl_secs: i64,
+    ) -> anyhow::Result<()> {
         let now = crate::db::now_rfc3339();
         let expires = chrono::Utc::now()
             .checked_add_signed(chrono::Duration::seconds(ttl_secs))

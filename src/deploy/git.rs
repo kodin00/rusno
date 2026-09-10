@@ -79,11 +79,7 @@ impl GitOps {
             .await?;
         log.push_str(&format_output(&out));
         if !out.status.success() {
-            anyhow::bail!(
-                "git checkout {} failed:\n{}",
-                branch,
-                format_output(&out)
-            );
+            anyhow::bail!("git checkout {} failed:\n{}", branch, format_output(&out));
         }
 
         // pull --ff-only; on failure stash and retry once

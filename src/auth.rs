@@ -57,10 +57,7 @@ pub fn require_auth(
     Box::pin(async move {
         // Allow these paths without auth
         let path = req.uri().path().to_string();
-        if path.starts_with("/hook/")
-            || path == "/setup"
-            || path == "/login"
-            || path == "/static/"
+        if path.starts_with("/hook/") || path == "/setup" || path == "/login" || path == "/static/"
         {
             return next.run(req).await;
         }
@@ -98,10 +95,7 @@ pub fn require_auth(
         }
 
         // Touch session expiry (sliding window)
-        let _ = state
-            .db
-            .touch_session(&session.id, SESSION_TTL_SECS)
-            .await;
+        let _ = state.db.touch_session(&session.id, SESSION_TTL_SECS).await;
 
         // Insert the session into request extensions for handlers
         let mut req = req;
@@ -137,19 +131,12 @@ pub fn unsign_cookie(cookie_value: &str, session_secret: &str) -> Option<(String
     mac.update(id.as_bytes());
     let expected = base64::engine::general_purpose::STANDARD.encode(mac.finalize().into_bytes());
 
-    let valid: bool = subtle::ConstantTimeEq::ct_eq(
-        sig.as_bytes(),
-        expected.as_bytes(),
-    )
-    .into();
+    let valid: bool = subtle::ConstantTimeEq::ct_eq(sig.as_bytes(), expected.as_bytes()).into();
     Some((id.to_string(), valid))
 }
 
 /// Create a new session and return a signed cookie string + CSRF token.
-pub async fn create_session(
-    db: &Db,
-    session_secret: &str,
-) -> Result<(String, String)> {
+pub async fn create_session(db: &Db, session_secret: &str) -> Result<(String, String)> {
     use base64::Engine;
     let mut id_bytes = [0u8; 32];
     rand::thread_rng().fill_bytes(&mut id_bytes);
@@ -159,7 +146,8 @@ pub async fn create_session(
     rand::thread_rng().fill_bytes(&mut csrf_bytes);
     let csrf_token = base64::engine::general_purpose::STANDARD.encode(csrf_bytes);
 
-    db.create_session(&session_id, &csrf_token, SESSION_TTL_SECS).await?;
+    db.create_session(&session_id, &csrf_token, SESSION_TTL_SECS)
+        .await?;
 
     let signed = sign_cookie(&session_id, session_secret);
     Ok((signed, csrf_token))
@@ -169,9 +157,7 @@ pub async fn create_session(
 pub fn session_cookie(signed_value: &str) -> String {
     format!(
         "{}={}; Path=/; HttpOnly; SameSite=Lax; Max-Age={}",
-        SESSION_COOKIE_NAME,
-        signed_value,
-        SESSION_TTL_SECS
+        SESSION_COOKIE_NAME, signed_value, SESSION_TTL_SECS
     )
 }
 

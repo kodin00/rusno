@@ -31,13 +31,7 @@ impl Project {
         folder_name
             .to_lowercase()
             .chars()
-            .map(|c| {
-                if c.is_ascii_alphanumeric() {
-                    c
-                } else {
-                    '-'
-                }
-            })
+            .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
             .collect::<String>()
             .trim_matches('-')
             .to_string()
@@ -55,7 +49,10 @@ impl Project {
     /// Extract the repo name from a git URL (last segment minus .git).
     pub fn repo_name(url: &str) -> String {
         let trimmed = url.trim_end_matches(".git");
-        let last = trimmed.rsplit(|c| c == '/' || c == ':').next().unwrap_or(trimmed);
+        let last = trimmed
+            .rsplit(|c| c == '/' || c == ':')
+            .next()
+            .unwrap_or(trimmed);
         last.to_string()
     }
 }
@@ -101,10 +98,11 @@ impl Db {
         let mut slug = base.clone();
         let mut suffix = 2u32;
         loop {
-            let exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM projects WHERE slug = ?)")
-                .bind(&slug)
-                .fetch_one(&self.pool)
-                .await?;
+            let exists: bool =
+                sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM projects WHERE slug = ?)")
+                    .bind(&slug)
+                    .fetch_one(&self.pool)
+                    .await?;
             if !exists {
                 return Ok(slug);
             }
@@ -130,11 +128,10 @@ impl Db {
     }
 
     pub async fn list_projects(&self) -> anyhow::Result<Vec<Project>> {
-        let projects = sqlx::query_as::<_, Project>(
-            "SELECT * FROM projects ORDER BY display_name ASC",
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let projects =
+            sqlx::query_as::<_, Project>("SELECT * FROM projects ORDER BY display_name ASC")
+                .fetch_all(&self.pool)
+                .await?;
         Ok(projects)
     }
 

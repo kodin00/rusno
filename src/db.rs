@@ -35,9 +35,7 @@ impl Db {
             .max_connections(8)
             .connect_with(options)
             .await
-            .with_context(|| {
-                format!("connecting to sqlite database at {}", db_path.display())
-            })?;
+            .with_context(|| format!("connecting to sqlite database at {}", db_path.display()))?;
 
         // Belt-and-suspenders: ensure WAL is on for this connection's writes
         // (the connect option above handles new pools, but an existing file's
@@ -70,48 +68,41 @@ impl Db {
     /// Insert default settings if missing. Idempotent — safe to call on every
     /// startup.
     pub async fn seed_defaults(&self) -> Result<()> {
-        sqlx::query(
-            "INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)",
-        )
-        .bind("deploy_concurrency")
-        .bind("2")
-        .execute(&self.pool)
-        .await
-        .context("seeding default deploy_concurrency")?;
+        sqlx::query("INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)")
+            .bind("deploy_concurrency")
+            .bind("2")
+            .execute(&self.pool)
+            .await
+            .context("seeding default deploy_concurrency")?;
 
-        sqlx::query(
-            "INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)",
-        )
-        .bind("default_health_timeout_secs")
-        .bind("60")
-        .execute(&self.pool)
-        .await
-        .context("seeding default default_health_timeout_secs")?;
+        sqlx::query("INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)")
+            .bind("default_health_timeout_secs")
+            .bind("60")
+            .execute(&self.pool)
+            .await
+            .context("seeding default default_health_timeout_secs")?;
 
         Ok(())
     }
 
     /// Read a setting value by key. Returns `None` if the key is absent.
     pub async fn get_setting(&self, key: &str) -> Result<Option<String>> {
-        let row: Option<(String,)> =
-            sqlx::query_as("SELECT value FROM settings WHERE key = ?1")
-                .bind(key)
-                .fetch_optional(&self.pool)
-                .await
-                .with_context(|| format!("reading setting {:?}", key))?;
+        let row: Option<(String,)> = sqlx::query_as("SELECT value FROM settings WHERE key = ?1")
+            .bind(key)
+            .fetch_optional(&self.pool)
+            .await
+            .with_context(|| format!("reading setting {:?}", key))?;
         Ok(row.map(|(v,)| v))
     }
 
     /// Upsert a setting (INSERT OR REPLACE on the primary key).
     pub async fn set_setting(&self, key: &str, value: &str) -> Result<()> {
-        sqlx::query(
-            "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
-        )
-        .bind(key)
-        .bind(value)
-        .execute(&self.pool)
-        .await
-        .with_context(|| format!("writing setting {:?}", key))?;
+        sqlx::query("INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)")
+            .bind(key)
+            .bind(value)
+            .execute(&self.pool)
+            .await
+            .with_context(|| format!("writing setting {:?}", key))?;
         Ok(())
     }
 

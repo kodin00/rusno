@@ -67,15 +67,13 @@ impl Db {
         log_tail: Option<&str>,
         error: Option<&str>,
     ) -> anyhow::Result<()> {
-        sqlx::query(
-            "UPDATE deploys SET status = ?, log_tail = ?, error = ? WHERE id = ?",
-        )
-        .bind(status)
-        .bind(log_tail)
-        .bind(error)
-        .bind(id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE deploys SET status = ?, log_tail = ?, error = ? WHERE id = ?")
+            .bind(status)
+            .bind(log_tail)
+            .bind(error)
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
@@ -88,12 +86,7 @@ impl Db {
         Ok(())
     }
 
-    pub async fn set_deploy_commit(
-        &self,
-        id: i64,
-        sha: &str,
-        msg: &str,
-    ) -> anyhow::Result<()> {
+    pub async fn set_deploy_commit(&self, id: i64, sha: &str, msg: &str) -> anyhow::Result<()> {
         sqlx::query("UPDATE deploys SET commit_sha = ?, commit_msg = ? WHERE id = ?")
             .bind(sha)
             .bind(msg)

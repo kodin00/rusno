@@ -30,9 +30,7 @@ fn rate_limited(slug: &str) -> bool {
     let map = guards.get_or_insert_with(HashMap::new);
     let now = Instant::now();
 
-    let entry = map
-        .entry(slug.to_string())
-        .or_insert((now, 0));
+    let entry = map.entry(slug.to_string()).or_insert((now, 0));
 
     if now.duration_since(entry.0).as_secs() >= 60 {
         // New window
@@ -95,7 +93,10 @@ pub async fn handle_webhook(
     let project = match state.db.get_project(&slug).await {
         Ok(Some(p)) if p.webhook_enabled => p,
         _ => {
-            return (StatusCode::NOT_FOUND, Json(json!({"status": "error", "reason": "not found"})))
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({"status": "error", "reason": "not found"})),
+            )
                 .into_response()
         }
     };

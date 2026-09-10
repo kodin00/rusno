@@ -3,11 +3,11 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use bollard::container::ListContainersOptions;
-use bollard::image::PruneImagesOptions;
 use bollard::container::PruneContainersOptions;
+use bollard::image::PruneImagesOptions;
 use bollard::models::ContainerSummary;
 use bollard::Docker;
-use sysinfo::{System, Disks};
+use sysinfo::{Disks, System};
 
 /// Wrapper around the Docker Engine API (bollard) + sysinfo for host telemetry.
 #[derive(Clone)]
@@ -31,10 +31,7 @@ impl DockerClient {
     pub async fn list_rusno_containers(&self) -> Result<Vec<ContainerSummary>> {
         let opts = ListContainersOptions {
             all: false,
-            filters: HashMap::from([(
-                "label".to_string(),
-                vec!["rusno.project".to_string()],
-            )]),
+            filters: HashMap::from([("label".to_string(), vec!["rusno.project".to_string()])]),
             ..Default::default()
         };
         let containers = self.docker.list_containers(Some(opts)).await?;
@@ -158,12 +155,7 @@ impl DockerClient {
     ) -> Result<std::process::Output> {
         let compose_file = folder_path.join(compose_path);
         let mut cmd = tokio::process::Command::new("docker");
-        cmd.args([
-            "compose",
-            "-f",
-            &compose_file.to_string_lossy(),
-            "stop",
-        ]);
+        cmd.args(["compose", "-f", &compose_file.to_string_lossy(), "stop"]);
         cmd.current_dir(folder_path);
         cmd.stdout(std::process::Stdio::piped());
         cmd.stderr(std::process::Stdio::piped());
@@ -178,12 +170,7 @@ impl DockerClient {
     ) -> Result<std::process::Output> {
         let compose_file = folder_path.join(compose_path);
         let mut cmd = tokio::process::Command::new("docker");
-        cmd.args([
-            "compose",
-            "-f",
-            &compose_file.to_string_lossy(),
-            "restart",
-        ]);
+        cmd.args(["compose", "-f", &compose_file.to_string_lossy(), "restart"]);
         cmd.current_dir(folder_path);
         cmd.stdout(std::process::Stdio::piped());
         cmd.stderr(std::process::Stdio::piped());
@@ -214,11 +201,7 @@ impl DockerClient {
 
     /// Poll `docker compose ps` to check container health.
     /// Returns true if all services are running (or healthy if healthchecks defined).
-    pub async fn compose_ps_healthy(
-        &self,
-        folder_path: &Path,
-        compose_path: &str,
-    ) -> Result<bool> {
+    pub async fn compose_ps_healthy(&self, folder_path: &Path, compose_path: &str) -> Result<bool> {
         let compose_file = folder_path.join(compose_path);
         let mut cmd = tokio::process::Command::new("docker");
         cmd.args([
@@ -233,7 +216,10 @@ impl DockerClient {
         cmd.stdout(std::process::Stdio::piped());
         cmd.stderr(std::process::Stdio::piped());
 
-        let output = cmd.output().await.context("failed to run docker compose ps")?;
+        let output = cmd
+            .output()
+            .await
+            .context("failed to run docker compose ps")?;
         let stdout = String::from_utf8_lossy(&output.stdout);
 
         // Each line is a JSON object. Parse and check status.

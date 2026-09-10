@@ -4,7 +4,6 @@
 //! All routes here sit behind the auth middleware (see `routes::mod`), so the
 //! session is already in the request extensions by the time a handler runs.
 
-
 use axum::extract::{Path, Query, Request, State};
 use axum::http::{header, StatusCode};
 use axum::response::{Html, IntoResponse, Response};
@@ -81,10 +80,7 @@ pub async fn deploy_detail(
 
 /// GET /deployments/:id/log — HTMX partial returning the `log_tail` content,
 /// swapped into `#deploy-log` every 5 seconds while a deploy is in flight.
-pub async fn deploy_log_fragment(
-    State(state): State<AppState>,
-    Path(id): Path<i64>,
-) -> Response {
+pub async fn deploy_log_fragment(State(state): State<AppState>, Path(id): Path<i64>) -> Response {
     let deploy = match state.db.get_deploy(id).await {
         Ok(Some(d)) => d,
         _ => return StatusCode::NOT_FOUND.into_response(),

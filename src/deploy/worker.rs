@@ -68,7 +68,12 @@ async fn worker_loop(
             // The dropped deploy row is marked failed so it doesn't linger as queued.
             let _ = ctx
                 .db
-                .finish_deploy(dropped_id, "failed", None, Some("coalesced into a newer deploy"))
+                .finish_deploy(
+                    dropped_id,
+                    "failed",
+                    None,
+                    Some("coalesced into a newer deploy"),
+                )
                 .await;
         }
 
@@ -91,7 +96,12 @@ async fn worker_loop(
 
 /// Run a single deploy through the full state machine:
 /// queued → pulling → building → starting → healthy → succeeded (or failed).
-async fn run_deploy(ctx: &WorkerContext, project_id: i64, deploy_id: i64, request: DeployRequest) -> Result<()> {
+async fn run_deploy(
+    ctx: &WorkerContext,
+    project_id: i64,
+    deploy_id: i64,
+    request: DeployRequest,
+) -> Result<()> {
     let db = &ctx.db;
 
     let project = match db.get_project_by_id(project_id).await? {
@@ -157,16 +167,21 @@ async fn run_deploy(ctx: &WorkerContext, project_id: i64, deploy_id: i64, reques
                 if !skip_pull {
                     match git.fetch_checkout_pull(&folder_path, &project.branch).await {
                         Ok(out) => write_log(&mut log_file, &out).await,
-                        Err(e) => return fail_deploy(db, deploy_id, &mut log_file, &mut ring, e).await,
+                        Err(e) => {
+                            return fail_deploy(db, deploy_id, &mut log_file, &mut ring, e).await
+                        }
                     }
                 } else {
-                    write_log(&mut log_file, "[restart] HEAD unchanged, skipping git pull")
-                        .await;
+                    write_log(&mut log_file, "[restart] HEAD unchanged, skipping git pull").await;
                 }
             }
         }
         DeployRequest::Rollback { commit_sha, .. } => {
-            write_log(&mut log_file, &format!("[rollback] target commit {commit_sha}")).await;
+            write_log(
+                &mut log_file,
+                &format!("[rollback] target commit {commit_sha}"),
+            )
+            .await;
             match git.fetch_checkout_commit(&folder_path, commit_sha).await {
                 Ok(out) => write_log(&mut log_file, &out).await,
                 Err(e) => return fail_deploy(db, deploy_id, &mut log_file, &mut ring, e).await,
@@ -189,7 +204,11 @@ async fn run_deploy(ctx: &WorkerContext, project_id: i64, deploy_id: i64, reques
     };
 
     match docker
-        .compose_up(&folder_path, &project.compose_path, &project.compose_command)
+        .compose_up(
+            &folder_path,
+            &project.compose_path,
+            &project.compose_command,
+        )
         .await
     {
         Ok(output) => {
@@ -254,8 +273,13 @@ async fn run_deploy(ctx: &WorkerContext, project_id: i64, deploy_id: i64, reques
         .await?;
     write_log(&mut log_file, "\n[deploy succeeded]").await;
 
-    db.finish_deploy(deploy_id, "succeeded", Some(ring.as_string().as_str()), None)
-        .await?;
+    db.finish_deploy(
+        deploy_id,
+        "succeeded",
+        Some(ring.as_string().as_str()),
+        None,
+    )
+    .await?;
 
     info!(project_id, deploy_id, "deploy succeeded");
     Ok(())
@@ -271,8 +295,13 @@ async fn fail_deploy(
     let err = format!("{e:#}");
     write_log(log_file, &format!("\n[deploy failed] {err}")).await;
     ring.push(&err);
-    db.finish_deploy(deploy_id, "failed", Some(ring.as_string().as_str()), Some(&err))
-        .await?;
+    db.finish_deploy(
+        deploy_id,
+        "failed",
+        Some(ring.as_string().as_str()),
+        Some(&err),
+    )
+    .await?;
     Ok(())
 }
 

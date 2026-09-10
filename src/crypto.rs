@@ -160,8 +160,8 @@ pub fn hash_password(password: &str) -> Result<String> {
 /// Hard parse/algorithm failures bubble up as `Err` so callers can tell
 /// "wrong password" apart from "corrupt stored value".
 pub fn verify_password(password: &str, hash: &str) -> Result<bool> {
-    let parsed = PasswordHash::new(hash)
-        .map_err(|e| anyhow!("invalid stored password hash: {e}"))?;
+    let parsed =
+        PasswordHash::new(hash).map_err(|e| anyhow!("invalid stored password hash: {e}"))?;
     match Argon2::default().verify_password(password.as_bytes(), &parsed) {
         Ok(()) => Ok(true),
         Err(argon2::password_hash::Error::Password) => Ok(false),
@@ -180,7 +180,7 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool> {
 pub fn random_base64url(n_bytes: usize) -> String {
     let mut buf = vec![0u8; n_bytes];
     rand::thread_rng().fill_bytes(&mut buf);
-        URL_SAFE_NO_PAD.encode(&buf)
+    URL_SAFE_NO_PAD.encode(&buf)
 }
 
 /// `n_bytes` random bytes, lower-hex-encoded.

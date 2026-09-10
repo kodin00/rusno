@@ -183,16 +183,21 @@ pub fn settings_page(
         None
     };
 
-    base("Settings", "settings", Some(csrf), html! {
-        style { (PreEscaped(SETTINGS_CSS)) }
-        script { (PreEscaped(CSRF_SCRIPT)) }
+    base(
+        "Settings",
+        "settings",
+        Some(csrf),
+        html! {
+            style { (PreEscaped(SETTINGS_CSS)) }
+            script { (PreEscaped(CSRF_SCRIPT)) }
 
-        (service_config_card(config, settings))
-        (ssh_keys_card(settings, ssh_pubkey, &host_keys, agent_keys.as_deref()))
-        (github_card(settings))
-        (docker_card(docker_df))
-        (admin_card())
-    })
+            (service_config_card(config, settings))
+            (ssh_keys_card(settings, ssh_pubkey, &host_keys, agent_keys.as_deref()))
+            (github_card(settings))
+            (docker_card(docker_df))
+            (admin_card())
+        },
+    )
 }
 
 // ---------------------------------------------------------------------------

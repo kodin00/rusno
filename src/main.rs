@@ -1,13 +1,13 @@
-mod config;
-mod db;
-mod crypto;
 mod auth;
-mod models;
-mod docker;
+mod config;
+mod crypto;
+mod db;
 mod deploy;
-mod webhooks;
+mod docker;
+mod models;
 mod routes;
 mod templates;
+mod webhooks;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -58,7 +58,8 @@ pub struct AppState {
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("rusno=debug,info")),
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("rusno=debug,info")),
         )
         .init();
 

@@ -183,18 +183,27 @@ async fn atomic_write(folder: &std::path::Path, rel: &str, contents: &str) -> Re
     // Ensure the parent directory exists (compose_path may be nested).
     if let Some(parent) = target.parent() {
         if let Err(e) = tokio::fs::create_dir_all(parent).await {
-            return (StatusCode::INTERNAL_SERVER_ERROR, format!("mkdir failed: {e}"))
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("mkdir failed: {e}"),
+            )
                 .into_response();
         }
     }
 
     if let Err(e) = tokio::fs::write(&tmp, contents).await {
-        return (StatusCode::INTERNAL_SERVER_ERROR, format!("write failed: {e}"))
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("write failed: {e}"),
+        )
             .into_response();
     }
     if let Err(e) = tokio::fs::rename(&tmp, &target).await {
         let _ = tokio::fs::remove_file(&tmp).await;
-        return (StatusCode::INTERNAL_SERVER_ERROR, format!("rename failed: {e}"))
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("rename failed: {e}"),
+        )
             .into_response();
     }
 
@@ -237,7 +246,7 @@ pub async fn autodetect(
 ) -> Response {
     let url = params.url.trim();
     if url.is_empty() {
-        return maud::html! { }.into_response();
+        return maud::html! {}.into_response();
     }
 
     let repo_name = Project::repo_name(url);
@@ -271,7 +280,8 @@ pub async fn create_project(
     // ---- Resolve the folder path -----------------------------------------
     let root = projects_root(&state).await;
     let folder_name = form.folder_name.trim().to_string();
-    let folder_path = PathBuf::from(&root).join(&folder_name)
+    let folder_path = PathBuf::from(&root)
+        .join(&folder_name)
         .to_string_lossy()
         .to_string();
 
@@ -347,14 +357,8 @@ pub async fn project_detail(
 
     let webhook_url = webhook_url_for(&req, &project.slug);
 
-    tpl::project_detail_page(
-        csrf(&req),
-        &project,
-        &webhook_url,
-        &deploys,
-        is_deploying,
-    )
-    .into_response()
+    tpl::project_detail_page(csrf(&req), &project, &webhook_url, &deploys, is_deploying)
+        .into_response()
 }
 
 /// POST /projects/:slug/deploy — enqueue a manual deploy.
@@ -463,17 +467,18 @@ pub async fn remove_project(State(state): State<AppState>, Path(slug): Path<Stri
 
     if let Err(e) = state.db.delete_project(project.id).await {
         tracing::error!(project = %slug, "delete_project failed: {e:#}");
-        return (StatusCode::INTERNAL_SERVER_ERROR, "failed to delete project").into_response();
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "failed to delete project",
+        )
+            .into_response();
     }
 
     Redirect::to("/projects").into_response()
 }
 
 /// POST /projects/:slug/webhook-toggle — flip webhook_enabled (HTMX partial).
-pub async fn toggle_webhook(
-    State(state): State<AppState>,
-    Path(slug): Path<String>,
-) -> Response {
+pub async fn toggle_webhook(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let mut project = match require_project(&state, &slug).await {
         Ok(p) => p,
         Err(resp) => return resp,
@@ -483,7 +488,11 @@ pub async fn toggle_webhook(
 
     if let Err(e) = state.db.update_project(project.id, &project).await {
         tracing::error!(project = %slug, "update_project (webhook toggle) failed: {e:#}");
-        return (StatusCode::INTERNAL_SERVER_ERROR, "failed to update project").into_response();
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "failed to update project",
+        )
+            .into_response();
     }
 
     tpl::webhook_toggle_fragment(&slug, new_enabled).into_response()
@@ -541,12 +550,12 @@ pub async fn get_env(State(state): State<AppState>, Path(slug): Path<String>) ->
         Ok(p) => p,
         Err(resp) => return resp,
     };
-    let content = read_project_file(&project, ".env").await.unwrap_or_default();
+    let content = read_project_file(&project, ".env")
+        .await
+        .unwrap_or_default();
     // Whether a .env.example exists determines whether the "copy from example"
     // button is shown.
-    let has_example = read_project_file(&project, ".env.example")
-        .await
-        .is_some();
+    let has_example = read_project_file(&project, ".env.example").await.is_some();
     tpl::env_editor(&slug, &content, has_example).into_response()
 }
 
