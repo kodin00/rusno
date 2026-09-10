@@ -8,6 +8,8 @@
 curl -fsSL https://raw.githubusercontent.com/kodin00/rusno/master/install.sh | sudo sh
 ```
 
+Already have the binary? `sudo rusno service install` wires up the systemd service (auto-starts on boot).
+
 This downloads the latest build from the [`latest` release](https://github.com/kodin00/rusno/releases/latest), installs the `rusno` binary to `/usr/local/bin`, wires up a systemd service, and runs first-run init. Then visit `http://localhost:6967` — you'll be redirected to the setup wizard. See [docs/install.md](./docs/install.md) for manual and Docker variants.
 
 ## What it does

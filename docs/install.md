@@ -13,6 +13,21 @@ Two install variants: (a) single binary + systemd, (b) dockerized rusno with hos
 
 ## Variant (a): Binary + systemd (bare-metal, recommended)
 
+If the `rusno` binary is already on your `PATH` (e.g. via the one-line
+installer), the quickest way to wire up systemd is:
+
+```bash
+sudo rusno service install --port 6967
+# then visit http://localhost:6967
+```
+
+This writes `/etc/systemd/system/rusno.service` running as the invoking
+user (so it owns `~/.rusno`), enables it, and starts it now and on boot.
+`rusno service uninstall` removes the service; `rusno service status`
+shows `systemctl status rusno`.
+
+To do it manually instead:
+
 ```bash
 # 1. Get the binary (build locally or download a release)
 cargo build --release

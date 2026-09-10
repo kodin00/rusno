@@ -9,9 +9,6 @@ set -eu
 REPO="${REPO:-kodin00/rusno}"
 INSTALL_DIR="${RUSNO_INSTALL_DIR:-/usr/local/bin}"
 BIN="$INSTALL_DIR/rusno"
-# Run the service as the invoking user so it owns ~/.rusno. SUDO_USER covers
-# `curl ... | sudo sh`.
-run_user="${SUDO_USER:-${USER:-$(id -un)}}"
 RUSNO_PORT="${RUSNO_PORT:-6967}"
 
 case "$(uname -s)" in
@@ -66,27 +63,7 @@ rusno init --port "$RUSNO_PORT"
 # Set up (or refresh) the systemd service when systemd is available.
 if command -v systemctl >/dev/null 2>&1; then
   echo "rusno: configuring systemd service ..."
-  sudo tee /etc/systemd/system/rusno.service >/dev/null <<EOF
-[Unit]
-Description=rusno — self-hosted deployment manager
-After=network-online.target docker.service
-Wants=network-online.target docker.service
-
-[Service]
-Type=simple
-User=${run_user}
-Group=docker
-ExecStart=${BIN} serve --port ${RUSNO_PORT}
-Restart=on-failure
-RestartSec=5
-Environment=RUSNO_HOME=${HOME:-/home/${run_user}}/.rusno
-
-[Install]
-WantedBy=multi-user.target
-EOF
-  sudo systemctl daemon-reload
-  sudo systemctl enable rusno
-  sudo systemctl restart rusno
+  sudo "$BIN" service install --port "$RUSNO_PORT"
   echo "rusno: service running on http://localhost:${RUSNO_PORT}"
 else
   echo "rusno: systemd not detected; run '${BIN} serve --port ${RUSNO_PORT}' under your own supervisor" >&2

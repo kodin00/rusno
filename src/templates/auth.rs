@@ -2,19 +2,12 @@
 //!
 //! Both pages render through [`crate::templates::layout::base`] with no
 //! active nav tab and no CSRF meta tag — they are public, pre-auth screens.
-//! The dark-theme styling mirrors the classes defined in the base layout
-//! (`card`, `btn btn-primary`), with a small amount of inline CSS scoped to
-//! the auth forms so they don't require new shared rules.
+//! The form controls reuse the global `field` class from the base layout, so
+//! the auth screens add no styling of their own.
 
 use maud::{html, Markup};
 
 use crate::templates::layout::base;
-
-/// Inline styles shared by the auth form fields. Kept local so the auth
-/// screens stay self-contained and don't leak into other pages.
-const FIELD_CSS: &str = "display:block; width:100%; margin-top:0.25rem; \
-    padding:0.5rem; background:#1a1a2e; border:1px solid #0f3460; \
-    border-radius:6px; color:#e0e0e0; font-size:0.95rem;";
 
 /// First-run setup wizard form.
 ///
@@ -35,17 +28,15 @@ pub fn setup_page() -> Markup {
                     "Set your admin password to get started."
                 }
                 form method="post" action="/setup" {
-                    label for="password" style="display:block; margin-bottom:1rem;" {
+                    label for="password" class="field" {
                         "Password"
                         input type="password" id="password" name="password"
-                            required autocomplete="new-password"
-                            style=(FIELD_CSS);
+                            required autocomplete="new-password";
                     }
-                    label for="confirm" style="display:block; margin-bottom:1.25rem;" {
+                    label for="confirm" class="field" {
                         "Confirm password"
                         input type="password" id="confirm" name="confirm"
-                            required autocomplete="new-password"
-                            style=(FIELD_CSS);
+                            required autocomplete="new-password";
                     }
                     button type="submit" class="btn btn-primary" style="width:100%;" {
                         "Set password"
@@ -84,11 +75,10 @@ pub fn login_page(error: Option<&str>) -> Markup {
                     }
                 }
                 form method="post" action="/login" {
-                    label for="password" style="display:block; margin-bottom:1.25rem;" {
+                    label for="password" class="field" {
                         "Password"
                         input type="password" id="password" name="password"
-                            required autofocus autocomplete="current-password"
-                            style=(FIELD_CSS);
+                            required autofocus autocomplete="current-password";
                     }
                     button type="submit" class="btn btn-primary" style="width:100%;" {
                         "Sign in"

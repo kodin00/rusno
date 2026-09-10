@@ -109,13 +109,12 @@ pub fn new_project_form_page(csrf: &str, error: Option<&str>) -> Markup {
             }
 
             form class="card" method="post" action="/projects" hx-boost="true" {
-                label style="display:block;margin-bottom:1rem" {
+                label class="field" {
                     "Source URL"
                     input type="url"
                         name="source_url"
                         placeholder="git@github.com:owner/repo.git or https://github.com/owner/repo.git"
                         required
-                        style="width:100%;margin-top:0.25rem"
                         autocomplete="off"
                         hx-get="/projects/new/autodetect"
                         hx-trigger="blur"
@@ -124,66 +123,61 @@ pub fn new_project_form_page(csrf: &str, error: Option<&str>) -> Markup {
                     div id="autodetect-result" style="margin-top:0.5rem" { }
                 }
 
-                label style="display:block;margin-bottom:1rem" {
+                label class="field" {
                     "Project name"
                     input type="text"
                         name="display_name"
                         placeholder="My app"
-                        style="width:100%;margin-top:0.25rem"
                         autocomplete="off";
                 }
 
-                label style="display:block;margin-bottom:1rem" {
+                label class="field" {
                     "Folder name"
                     input type="text"
                         name="folder_name"
                         id="folder_name"
                         placeholder="repo"
-                        style="width:100%;margin-top:0.25rem"
                         autocomplete="off";
                 }
 
-                label style="display:block;margin-bottom:1rem" {
+                label class="field" {
                     "Branch"
                     input type="text"
                         name="branch"
                         id="branch"
                         placeholder="main"
-                        style="width:100%;margin-top:0.25rem"
                         autocomplete="off";
                 }
 
-                label style="display:block;margin-bottom:1rem" {
+                label class="field" {
                     "Compose file path"
                     input type="text"
                         name="compose_path"
                         value="docker-compose.yml"
                         placeholder="docker/docker-compose.yml"
-                        style="width:100%;margin-top:0.25rem"
                         autocomplete="off";
                 }
 
-                label style="display:block;margin-bottom:1rem" {
+                label class="field" {
                     "Compose-up command"
                     input type="text"
                         name="compose_command"
                         value="up -d --build --remove-orphans"
-                        style="width:100%;margin-top:0.25rem"
                         autocomplete="off";
                 }
 
-                label style="display:block;margin-bottom:1rem" {
+                label class="checkbox" {
                     input type="checkbox" name="auto_start" value="on" checked="checked";
-                    " Auto-start"
+                    "Auto-start"
                 }
 
-                label style="display:block;margin-bottom:1rem" {
+                label class="field" {
                     "Health timeout (seconds)"
                     input type="number"
                         name="health_timeout_secs"
                         value="60"
                         min="1"
-                        style="width:6rem;margin-top:0.25rem";
+                        style="width:8rem";
                 }
 
                 button type="submit" class="btn btn-primary" { "Create project" }

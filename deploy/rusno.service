@@ -11,15 +11,16 @@ Group=docker
 ExecStart=/usr/local/bin/rusno serve --port 6967
 Restart=on-failure
 RestartSec=5
-# Rusno home directory (config, db, keys, ssh)
+# Rusno home directory (config, db, keys, ssh). %h expands to the User's home.
 Environment=RUSNO_HOME=%h/.rusno
+WorkingDirectory=%h
 
-# Hardening
+# Hardening (deliberately no ProtectHome so host-existing SSH keys in ~/.ssh
+# remain readable in host-existing mode).
 NoNewPrivileges=true
 ProtectSystem=full
-ProtectHome=tmpfs
-ReadWritePaths=%h/.rusno %h/rusno/projects
 PrivateTmp=true
+ReadWritePaths=%h/.rusno %h/rusno/projects
 
 [Install]
 WantedBy=multi-user.target

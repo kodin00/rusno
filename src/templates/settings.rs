@@ -14,26 +14,14 @@ use crate::config::AppConfig;
 use crate::docker::{format_bytes, DiskUsageSummary};
 use crate::templates::layout::base;
 
-/// Additional inline styles for form controls on the settings page
-/// (extends the base layout CSS).
+/// Settings-page-only style extras. The shared form controls
+/// (`input`, `textarea`, `select`, checkbox, radio) are styled globally in
+/// the base layout; this block only adds the settings-specific scaffolding
+/// (label caption spacing, radio group, <pre> blocks, helper text).
 const SETTINGS_CSS: &str = r#"
-    input, textarea, select {
-        background: #0f3460;
-        border: 1px solid #1a1a2e;
-        border-radius: 4px;
-        padding: 0.5rem;
-        color: #e0e0e0;
-        font-size: 0.9rem;
-        width: 100%;
-        margin-bottom: 0.75rem;
-    }
-    textarea { font-family: monospace; resize: vertical; }
-    input[type="radio"], input[type="checkbox"] {
-        width: auto; margin-bottom: 0;
-    }
     label { display: block; margin-bottom: 0.25rem; font-size: 0.85rem; color: #9aa0b5; }
     .radio-label {
-        display: flex; gap: 0.25rem; align-items: center;
+        display: flex; gap: 0.35rem; align-items: center;
         cursor: pointer; margin-bottom: 0; font-size: 0.9rem; color: #e0e0e0;
     }
     small { color: #6c7293; font-size: 0.8rem; display: block; margin-bottom: 0.75rem; }
