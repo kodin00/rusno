@@ -5,15 +5,10 @@
 ## Install
 
 ```bash
-docker run -d --name rusno --restart unless-stopped \
-  -p 6967:6967 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ~/.rusno:/root/.rusno \
-  -v ~/rusno/projects:/root/rusno/projects \
-  ghcr.io/kodin00/rusno:latest
+curl -fsSL https://raw.githubusercontent.com/kodin00/rusno/master/install.sh | sudo bash
 ```
 
-Then visit `http://localhost:6967` — you'll be redirected to the first-run setup wizard. See [docs/install.md](./docs/install.md) for the bare-metal (binary + systemd) variant and bind-mount details.
+This downloads the latest build from the [`latest` release](https://github.com/kodin00/rusno/releases/latest), installs the `rusno` binary to `/usr/local/bin`, wires up a systemd service, and runs first-run init. Then visit `http://localhost:6967` — you'll be redirected to the setup wizard. See [docs/install.md](./docs/install.md) for manual and Docker variants.
 
 ## What it does
 

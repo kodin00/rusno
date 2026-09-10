@@ -2,15 +2,31 @@
 set -euo pipefail
 
 # rusno install script
-# Downloads the binary, installs it, sets up the systemd service, and runs init.
+# Installs the latest rusno binary, sets up the systemd service, and runs init.
+#
+# Usage:
+#   curl -fsSL https://raw.githubusercontent.com/kodin00/rusno/master/install.sh | sudo bash
+#   ./install.sh                       # use a locally built binary if present
+#   RUSNO_PORT=7000 ./install.sh       # override the listen port
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="kodin00/rusno"
+ASSET="rusno-x86_64-linux.tar.gz"
+RELEASE_URL="https://github.com/${REPO}/releases/download/latest/${ASSET}"
 
-# --- Config ---
 INSTALL_BIN="/usr/local/bin/rusno"
 SERVICE_FILE="/etc/systemd/system/rusno.service"
 RUSNO_USER="${RUSNO_USER:-$(whoami)}"
 RUSNO_PORT="${RUSNO_PORT:-6967}"
+
+# Script's own dir (empty when piped to bash via curl)
+if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+    SCRIPT_DIR=""
+fi
+
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf "$TMPDIR"' EXIT
 
 echo "=== rusno install ==="
 echo "User:       $RUSNO_USER"
@@ -18,7 +34,7 @@ echo "Binary:     $INSTALL_BIN"
 echo "Port:       $RUSNO_PORT"
 echo ""
 
-# --- Check for Docker ---
+# --- Check for dependencies ---
 if ! command -v docker &>/dev/null; then
     echo "ERROR: docker not found. Install Docker Engine + docker compose plugin first."
     exit 1
@@ -29,19 +45,37 @@ if ! command -v git &>/dev/null; then
     exit 1
 fi
 
-# --- Download or copy binary ---
-if [[ -f "$SCRIPT_DIR/rusno" ]]; then
-    echo "Copying local binary..."
-    sudo cp "$SCRIPT_DIR/rusno" "$INSTALL_BIN"
-elif [[ -f "$SCRIPT_DIR/target/release/rusno" ]]; then
-    echo "Copying built binary..."
-    sudo cp "$SCRIPT_DIR/target/release/rusno" "$INSTALL_BIN"
+# --- Resolve the binary: local build, local file, or download latest ---
+RUSNO_BIN=""
+
+if [[ -n "$SCRIPT_DIR" && -f "$SCRIPT_DIR/rusno" ]]; then
+    echo "Using local binary at $SCRIPT_DIR/rusno"
+    RUSNO_BIN="$SCRIPT_DIR/rusno"
+elif [[ -n "$SCRIPT_DIR" && -f "$SCRIPT_DIR/target/release/rusno" ]]; then
+    echo "Using locally built binary..."
+    RUSNO_BIN="$SCRIPT_DIR/target/release/rusno"
 else
-    echo "No local binary found. Please build with 'cargo build --release' or download a release."
-    echo "  cargo build --release && sudo cp target/release/rusno $INSTALL_BIN"
-    exit 1
+    echo "Downloading latest release from GitHub..."
+    if ! command -v curl &>/dev/null; then
+        echo "ERROR: curl not found. Install curl or download $RELEASE_URL manually."
+        exit 1
+    fi
+    if ! curl -fsSL "$RELEASE_URL" -o "$TMPDIR/$ASSET"; then
+        echo "ERROR: failed to download $RELEASE_URL"
+        echo "       Check that a release exists under the 'latest' tag, or build locally"
+        echo "       with 'cargo build --release' and re-run ./install.sh."
+        exit 1
+    fi
+    tar xzf "$TMPDIR/$ASSET" -C "$TMPDIR"
+    RUSNO_BIN="$TMPDIR/rusno"
+    if [[ ! -f "$RUSNO_BIN" ]]; then
+        echo "ERROR: binary not found in archive after extraction."
+        exit 1
+    fi
 fi
 
+echo "Installing binary..."
+sudo cp "$RUSNO_BIN" "$INSTALL_BIN"
 sudo chmod +x "$INSTALL_BIN"
 
 # --- Initialize rusno ---
