@@ -26,7 +26,7 @@ jobs:
         run: |
           mkdir -p dist
           cp target/x86_64-unknown-linux-gnu/release/rusno dist/rusno-linux-x86_64
-          sed "s|__REPO__|${{ github.repository }}|g" install.sh > dist/install.sh
+          cp install.sh dist/install.sh
           chmod +x dist/install.sh
           (cd dist && sha256sum rusno-linux-x86_64 > SHA256SUMS)
 

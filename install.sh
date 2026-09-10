@@ -2,11 +2,11 @@
 # Install rusno from the latest GitHub release (Linux x86_64).
 # Downloads the binary, installs it, sets up the systemd service, and runs init.
 #
-# The release workflow bakes the real repo into the __REPO__ placeholder; run
-# locally from a checkout with: REPO=owner/repo ./install.sh
+# Defaults to the kodin00/rusno release; override with REPO=owner/repo for a
+# fork, or run locally from a checkout with: REPO=owner/repo ./install.sh
 set -eu
 
-REPO="${REPO:-__REPO__}"
+REPO="${REPO:-kodin00/rusno}"
 INSTALL_DIR="${RUSNO_INSTALL_DIR:-/usr/local/bin}"
 BIN="$INSTALL_DIR/rusno"
 # Run the service as the invoking user so it owns ~/.rusno. SUDO_USER covers
