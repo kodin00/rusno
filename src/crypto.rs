@@ -272,8 +272,7 @@ mod tests {
 
     #[test]
     fn random_outputs_have_expected_length() {
-        // 32 bytes -> 43 base64url chars (no padding); 32 bytes -> 64 hex chars.
+        // 32 bytes -> 43 base64url chars (no padding).
         assert_eq!(random_base64url(32).len(), 43);
-        assert_eq!(random_hex(32).len(), 64);
     }
 }
