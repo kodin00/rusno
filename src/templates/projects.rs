@@ -424,7 +424,7 @@ pub fn rollback_picker_fragment(deploys: &[Deploy]) -> Markup {
                                         input type="radio"
                                             name="commit_sha"
                                             value=(d.commit_sha.as_deref().unwrap_or(""))
-                                            checked[if i == 0 { true } else { false }];
+                                            checked[i == 0];
                                     }
                                     td { (short_sha(&d.commit_sha)) }
                                     td { (d.commit_msg.as_deref().unwrap_or("—")) }

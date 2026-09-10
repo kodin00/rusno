@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use anyhow::Result;
 use axum::extract::Request;
 use axum::http::{header, StatusCode};
@@ -81,16 +79,16 @@ pub fn require_auth(
 
         // CSRF check on state-changing requests (POST, PUT, DELETE)
         let method = req.method().clone();
-        if method == "POST" || method == "PUT" || method == "DELETE" {
-            if !path.starts_with("/hook/") {
-                let provided = req
-                    .headers()
-                    .get(CSRF_HEADER)
-                    .and_then(|v| v.to_str().ok())
-                    .unwrap_or("");
-                if provided != session.csrf_token {
-                    return (StatusCode::FORBIDDEN, "invalid CSRF token").into_response();
-                }
+        if (method == "POST" || method == "PUT" || method == "DELETE")
+            && !path.starts_with("/hook/")
+        {
+            let provided = req
+                .headers()
+                .get(CSRF_HEADER)
+                .and_then(|v| v.to_str().ok())
+                .unwrap_or("");
+            if provided != session.csrf_token {
+                return (StatusCode::FORBIDDEN, "invalid CSRF token").into_response();
             }
         }
 

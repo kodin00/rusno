@@ -7,7 +7,6 @@ use crate::config::AppConfig;
 
 /// Git operations for the deploy pipeline. All commands run with the
 /// appropriate GIT_SSH_COMMAND when ssh_mode is rusno-managed.
-
 pub struct GitOps {
     /// Path to the rusno-managed SSH key (used when ssh_mode = rusno-managed).
     ssh_key_path: Option<PathBuf>,

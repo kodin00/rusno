@@ -1,4 +1,3 @@
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -49,10 +48,7 @@ impl Project {
     /// Extract the repo name from a git URL (last segment minus .git).
     pub fn repo_name(url: &str) -> String {
         let trimmed = url.trim_end_matches(".git");
-        let last = trimmed
-            .rsplit(|c| c == '/' || c == ':')
-            .next()
-            .unwrap_or(trimmed);
+        let last = trimmed.rsplit(['/', ':']).next().unwrap_or(trimmed);
         last.to_string()
     }
 }

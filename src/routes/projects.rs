@@ -116,13 +116,17 @@ fn webhook_url_for(req: &Request, slug: &str) -> String {
 }
 
 /// Resolve a project by slug or return a 404 response.
-async fn require_project(state: &AppState, slug: &str) -> Result<Project, Response> {
+async fn require_project(state: &AppState, slug: &str) -> Result<Project, Box<Response>> {
     match state.db.get_project(slug).await {
         Ok(Some(p)) => Ok(p),
-        Ok(None) => Err((StatusCode::NOT_FOUND, "project not found").into_response()),
+        Ok(None) => Err(Box::new(
+            (StatusCode::NOT_FOUND, "project not found").into_response(),
+        )),
         Err(e) => {
             tracing::error!(slug, "get_project failed: {e:#}");
-            Err((StatusCode::INTERNAL_SERVER_ERROR, "database error").into_response())
+            Err(Box::new(
+                (StatusCode::INTERNAL_SERVER_ERROR, "database error").into_response(),
+            ))
         }
     }
 }
@@ -293,7 +297,7 @@ pub async fn create_project(
 
     let new = NewProject {
         display_name: form.display_name.trim().to_string(),
-        folder_name: folder_name,
+        folder_name,
         folder_path: folder_path.clone(),
         source_type,
         source_url: form.source_url.trim().to_string(),
@@ -338,7 +342,7 @@ pub async fn project_detail(
 ) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
 
     let deploys = match state.db.list_project_deploys(project.id, 50, 0).await {
@@ -365,7 +369,7 @@ pub async fn project_detail(
 pub async fn deploy_now(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     if let Err(e) = enqueue_normal(&state.deploy_manager, project.id, "manual").await {
         tracing::error!(project = %slug, "enqueue manual deploy failed: {e:#}");
@@ -377,7 +381,7 @@ pub async fn deploy_now(State(state): State<AppState>, Path(slug): Path<String>)
 pub async fn stop_project(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     run_compose(&state, &project, |c, f, p| async move {
         c.compose_stop(&f, &p).await
@@ -390,7 +394,7 @@ pub async fn stop_project(State(state): State<AppState>, Path(slug): Path<String
 pub async fn restart_project(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     run_compose(&state, &project, |c, f, p| async move {
         c.compose_restart(&f, &p).await
@@ -403,7 +407,7 @@ pub async fn restart_project(State(state): State<AppState>, Path(slug): Path<Str
 pub async fn rollback_picker(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let targets = match state.db.list_rollback_targets(project.id, 25).await {
         Ok(t) => t,
@@ -423,7 +427,7 @@ pub async fn rollback_to(
 ) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let sha = form.commit_sha.trim().to_string();
     if sha.is_empty() {
@@ -446,7 +450,7 @@ pub async fn rollback_to(
 pub async fn remove_project(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
 
     // Tear down containers + volumes first, then remove the folder, then the
@@ -481,7 +485,7 @@ pub async fn remove_project(State(state): State<AppState>, Path(slug): Path<Stri
 pub async fn toggle_webhook(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let mut project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     project.webhook_enabled = !project.webhook_enabled;
     let new_enabled = project.webhook_enabled;
@@ -506,7 +510,7 @@ pub async fn toggle_webhook(State(state): State<AppState>, Path(slug): Path<Stri
 pub async fn get_compose(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let content = read_project_file(&project, &project.compose_path)
         .await
@@ -522,7 +526,7 @@ pub async fn save_compose(
 ) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
 
     // "Reset to repo": discard local edits by checking out the repo-tracked
@@ -548,7 +552,7 @@ pub async fn save_compose(
 pub async fn get_env(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let content = read_project_file(&project, ".env")
         .await
@@ -567,7 +571,7 @@ pub async fn save_env(
 ) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let folder = PathBuf::from(&project.folder_path);
     atomic_write(&folder, ".env", &form.content).await
@@ -577,7 +581,7 @@ pub async fn save_env(
 pub async fn get_env_example(State(state): State<AppState>, Path(slug): Path<String>) -> Response {
     let project = match require_project(&state, &slug).await {
         Ok(p) => p,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     match read_project_file(&project, ".env.example").await {
         Some(contents) => {

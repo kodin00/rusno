@@ -1,4 +1,3 @@
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -49,7 +48,7 @@ impl Db {
         let expires = chrono::Utc::now()
             .checked_add_signed(chrono::Duration::seconds(ttl_secs))
             .map(|t| t.to_rfc3339())
-            .unwrap_or_else(|| crate::db::now_rfc3339());
+            .unwrap_or_else(crate::db::now_rfc3339);
 
         sqlx::query("UPDATE sessions SET expires_at = ? WHERE id = ?")
             .bind(&expires)

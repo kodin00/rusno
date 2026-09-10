@@ -183,18 +183,6 @@ pub fn random_base64url(n_bytes: usize) -> String {
     URL_SAFE_NO_PAD.encode(&buf)
 }
 
-/// `n_bytes` random bytes, lower-hex-encoded.
-pub fn random_hex(n_bytes: usize) -> String {
-    let mut buf = vec![0u8; n_bytes];
-    rand::thread_rng().fill_bytes(&mut buf);
-    hex::encode(&buf)
-}
-
-/// Convenience alias for [`random_base64url`].
-pub fn random_string(n_bytes: usize) -> String {
-    random_base64url(n_bytes)
-}
-
 // ----------------------------------------------------------------------------
 // HMAC verification (GitHub webhooks)
 // ----------------------------------------------------------------------------
