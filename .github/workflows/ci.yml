@@ -61,7 +61,7 @@ jobs:
         run: |
           tar czf rusno-x86_64-linux.tar.gz \
             -C target/x86_64-unknown-linux-gnu/release rusno \
-            -C . deploy/rusno.service install.sh
+            -C "$GITHUB_WORKSPACE" deploy/rusno.service install.sh
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
