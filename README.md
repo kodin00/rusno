@@ -5,7 +5,7 @@
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kodin00/rusno/master/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/kodin00/rusno/master/install.sh | sudo sh
 ```
 
 This downloads the latest build from the [`latest` release](https://github.com/kodin00/rusno/releases/latest), installs the `rusno` binary to `/usr/local/bin`, wires up a systemd service, and runs first-run init. Then visit `http://localhost:6967` — you'll be redirected to the setup wizard. See [docs/install.md](./docs/install.md) for manual and Docker variants.
