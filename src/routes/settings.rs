@@ -352,8 +352,8 @@ pub async fn sign_out_everywhere(State(state): State<AppState>) -> Response {
 /// as the success fragments.
 fn error_fragment(msg: &str) -> Markup {
     html! {
-        div class="card" style="border:1px solid #e74c3c;" {
-            p style="color:#e74c3c; font-weight:600;" { "Error" }
+        div class="card" style="border:1px solid rgba(220,38,38,0.3);background:var(--danger-soft);" {
+            p style="color:var(--danger-text); font-weight:600;" { "Error" }
             pre style="white-space:pre-wrap; word-break:break-word;" { (msg) }
         }
     }

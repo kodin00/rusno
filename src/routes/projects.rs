@@ -588,7 +588,7 @@ pub async fn get_env_example(State(state): State<AppState>, Path(slug): Path<Str
             maud::html! {
                 div class="card" style="margin-top:0.5rem" {
                     h4 style="margin-top:0" { ".env.example" }
-                    pre style="white-space:pre-wrap;font-family:monospace;background:#0d0d1a;border:1px solid #0f3460;border-radius:6px;padding:0.75rem;overflow:auto" { (contents) }
+                    pre style="white-space:pre-wrap;font-family:var(--mono);font-size:0.85rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.75rem;overflow:auto;background:#f8fafc;color:#1f2937" { (contents) }
                     button type="button"
                         onclick=(r#"const ed=document.getElementById('env-editor'); ed.value = this.previousElementSibling.textContent; ed.dispatchEvent(new Event('input'))"#)
                     { "Copy into editor" }

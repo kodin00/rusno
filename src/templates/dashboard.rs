@@ -162,7 +162,7 @@ pub fn recent_deploys_fragment(deploys: &[DeployWithProject]) -> Markup {
     if deploys.is_empty() {
         return html! {
             tr {
-                td colspan="5" style="text-align:center; color:#9aa0b5;" {
+                td colspan="5" style="text-align:center; color:var(--muted);" {
                     "No deployments yet"
                 }
             }

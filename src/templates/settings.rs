@@ -19,20 +19,21 @@ use crate::templates::layout::base;
 /// the base layout; this block only adds the settings-specific scaffolding
 /// (label caption spacing, radio group, <pre> blocks, helper text).
 const SETTINGS_CSS: &str = r#"
-    label { display: block; margin-bottom: 0.25rem; font-size: 0.85rem; color: #9aa0b5; }
+    label { display: block; margin-bottom: 0.25rem; font-size: 0.85rem; color: var(--muted); }
     .radio-label {
         display: flex; gap: 0.35rem; align-items: center;
-        cursor: pointer; margin-bottom: 0; font-size: 0.9rem; color: #e0e0e0;
+        cursor: pointer; margin-bottom: 0; font-size: 0.9rem; color: var(--text);
     }
-    small { color: #6c7293; font-size: 0.8rem; display: block; margin-bottom: 0.75rem; }
-    .muted { color: #9aa0b5; font-size: 0.85rem; }
+    small { color: var(--faint); font-size: 0.8rem; display: block; margin-bottom: 0.75rem; }
+    .muted { color: var(--muted); font-size: 0.85rem; }
     pre {
-        background: #0a0a1e; border: 1px solid #0f3460; border-radius: 4px;
+        background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-sm);
         padding: 0.75rem; overflow-x: auto; white-space: pre-wrap;
         word-break: break-word; margin-bottom: 0.75rem; font-size: 0.85rem;
+        font-family: var(--mono);
     }
     h2 { margin-bottom: 1rem; font-size: 1.15rem; }
-    .section-note { color: #6c7293; font-size: 0.85rem; margin-bottom: 1rem; }
+    .section-note { color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem; }
     .radio-group { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
     .btn-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; }
     .fragment-msg { margin-top: 0.5rem; }
@@ -402,7 +403,7 @@ fn admin_card() -> Markup {
             }
             div id="pw-msg" class="fragment-msg" { }
 
-            hr style="border:none; border-top:1px solid #0f3460; margin:1.5rem 0;"
+            hr style="border:none; border-top:1px solid var(--border); margin:1.5rem 0;"
 
             h2 style="font-size:1rem; margin-bottom:0.5rem;" { "Sessions" }
             p class="section-note" {

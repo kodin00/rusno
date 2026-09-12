@@ -103,7 +103,7 @@ pub fn new_project_form_page(csrf: &str, error: Option<&str>) -> Markup {
             h2 style="margin-bottom:1rem" { "Register a project" }
 
             @if let Some(msg) = error {
-                div class="card" style="background:rgba(231,76,60,0.12);border:1px solid #e74c3c;margin-bottom:1rem" {
+                div class="card" style="background:var(--danger-soft);border:1px solid rgba(220,38,38,0.3);color:var(--danger-text);margin-bottom:1rem" {
                     strong { (msg) }
                 }
             }
@@ -268,7 +268,7 @@ pub fn project_detail_page(
             div class="card" x-data=(r#"{ revealed: false }"#) {
                 h3 style="margin-top:0" { "Webhook" }
                 @if project.webhook_enabled {
-                    p { "Webhook is " strong style="color:#2ecc71" { "enabled" } " — POST pushes to the URL below to trigger a deploy." }
+                    p { "Webhook is " strong style="color:var(--success-text)" { "enabled" } " — POST pushes to the URL below to trigger a deploy." }
                 } @else {
                     p { "Webhook is " strong { "disabled" } " — enable it to allow push-triggered deploys." }
                 }
@@ -377,17 +377,17 @@ pub fn project_detail_page(
 /// HTMX partial: autodetect response shown under the source URL field.
 pub fn autodetect_response(repo_name: &str, default_branch: &str) -> Markup {
     html! {
-        div class="autodetect-result" style="color:#9aa0b5;font-size:0.85rem" {
+        div class="autodetect-result" style="color:var(--muted);font-size:0.85rem" {
             "Detected repo: " strong { (repo_name) }
             " · default branch: "
             button type="button"
                 onclick=(format!("document.getElementById('branch').value = '{}'", default_branch))
-                style="background:none;border:none;color:#5eb1ff;cursor:pointer;padding:0"
+                style="background:none;border:none;color:var(--accent);cursor:pointer;padding:0"
             { (default_branch) }
             " · "
             button type="button"
                 onclick=(format!("document.getElementById('folder_name').value = '{}'", repo_name))
-                style="background:none;border:none;color:#5eb1ff;cursor:pointer;padding:0"
+                style="background:none;border:none;color:var(--accent);cursor:pointer;padding:0"
             { "use as folder name" }
         }
     }
@@ -492,7 +492,7 @@ pub fn compose_editor(slug: &str, content: &str) -> Markup {
     html! {
         form hx-post=(format!("/projects/{}/compose", slug)) hx-target="#compose-status" hx-swap="innerHTML" {
             textarea id="compose-editor" name="content"
-                style="width:100%;min-height:24rem;font-family:monospace;background:#0d0d1a;color:#e0e0e0;border:1px solid #0f3460;border-radius:6px;padding:0.5rem"
+                style="width:100%;min-height:24rem;font-family:var(--mono);font-size:0.85rem"
             { (content) }
             div style="margin-top:0.5rem;display:flex;gap:0.5rem;align-items:center" {
                 button type="submit" class="btn btn-primary" { "Save" }
@@ -503,7 +503,7 @@ pub fn compose_editor(slug: &str, content: &str) -> Markup {
                     hx-vals=(r#"{"reset":"1"}"#)
                     hx-confirm="Reset the compose file to the repo version? Local changes will be lost."
                 { "Reset to repo" }
-                span id="compose-status" style="color:#9aa0b5" { }
+                span id="compose-status" style="color:var(--muted)" { }
             }
         }
         (codemirror_script("compose-editor", true))
@@ -515,7 +515,7 @@ pub fn env_editor(slug: &str, content: &str, has_example: bool) -> Markup {
     html! {
         form hx-post=(format!("/projects/{}/env", slug)) hx-target="#env-status" hx-swap="innerHTML" {
             textarea id="env-editor" name="content"
-                style="width:100%;min-height:20rem;font-family:monospace;background:#0d0d1a;color:#e0e0e0;border:1px solid #0f3460;border-radius:6px;padding:0.5rem"
+                style="width:100%;min-height:20rem;font-family:var(--mono);font-size:0.85rem"
             { (content) }
             div style="margin-top:0.5rem;display:flex;gap:0.5rem;align-items:center" {
                 button type="submit" class="btn btn-primary" { "Save" }
@@ -526,7 +526,7 @@ pub fn env_editor(slug: &str, content: &str, has_example: bool) -> Markup {
                         hx-swap="innerHTML"
                     { "Copy from .env.example" }
                 }
-                span id="env-status" style="color:#9aa0b5" { }
+                span id="env-status" style="color:var(--muted)" { }
             }
         }
         div id="env-example-preview" style="margin-top:0.5rem" { }

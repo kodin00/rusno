@@ -9,8 +9,8 @@ use crate::templates::layout::base;
 /// Page size for the deployments list — kept in sync with the route handler.
 const PER_PAGE: i64 = 25;
 
-/// Inline styles for the build-log `<pre>` block (monospace, dark bg).
-const LOG_STYLE: &str = "background:#0d0d1a; color:#e0e0e0; padding:1rem; border-radius:6px; font-family:'SF Mono',Menlo,Consolas,monospace; font-size:0.82rem; line-height:1.45; overflow:auto; max-height:36rem; white-space:pre-wrap; word-break:break-word;";
+/// Inline styles for the build-log `<pre>` block (monospace, light bg).
+const LOG_STYLE: &str = "background:#f8fafc; color:#1f2937; border:1px solid var(--border); padding:1rem; border-radius:var(--radius-sm); font-family:var(--mono); font-size:0.82rem; line-height:1.5; overflow:auto; max-height:36rem; white-space:pre-wrap; word-break:break-word;";
 
 /// Full deployments page: a paginated table of deploys across all projects.
 pub fn deployments_page(
@@ -33,7 +33,7 @@ pub fn deployments_page(
 
             .card {
                 @if deploys.is_empty() {
-                    p style="color:#9aa0b5; padding:1rem 0;" { "No deployments yet" }
+                    p style="color:var(--muted); padding:1rem 0;" { "No deployments yet" }
                 } @else {
                     table {
                         thead {
@@ -74,25 +74,25 @@ pub fn deployments_page(
                 @if has_older {
                     a href=(format!("/deployments?page={}", page + 1))
                        hx-boost="true"
-                       style="color:#9aa0b5;" {
+                       style="color:var(--muted);" {
                         "← older"
                     }
                 } @else {
-                    span style="color:#5a5a6e; opacity:0.5;" { "← older" }
+                    span style="color:var(--faint); opacity:0.6;" { "← older" }
                 }
 
-                span style="color:#9aa0b5; font-size:0.85rem;" {
+                span style="color:var(--muted); font-size:0.85rem;" {
                     "page " (page) " of " (total_pages)
                 }
 
                 @if has_newer {
                     a href=(format!("/deployments?page={}", page - 1))
                        hx-boost="true"
-                       style="color:#9aa0b5;" {
+                       style="color:var(--muted);" {
                         "newer →"
                     }
                 } @else {
-                    span style="color:#5a5a6e; opacity:0.5;" { "newer →" }
+                    span style="color:var(--faint); opacity:0.6;" { "newer →" }
                 }
             }
         },
@@ -127,30 +127,30 @@ pub fn deploy_detail_page(
 
                 div style="display:grid; grid-template-columns:auto 1fr; gap:0.35rem 1rem; font-size:0.92rem;" {
                     @if let Some(sha) = deploy.commit_sha.as_deref() {
-                        span style="color:#9aa0b5;" { "Commit" }
-                        span style="font-family:monospace;" { (sha) }
+                        span style="color:var(--muted);" { "Commit" }
+                        span style="font-family:var(--mono);" { (sha) }
                     }
                     @if let Some(msg) = deploy.commit_msg.as_deref() {
-                        span style="color:#9aa0b5;" { "Message" }
+                        span style="color:var(--muted);" { "Message" }
                         span { (msg) }
                     }
-                    span style="color:#9aa0b5;" { "Trigger" }
+                    span style="color:var(--muted);" { "Trigger" }
                     span { (trigger_badge(&deploy.trigger)) }
                     @if deploy.is_rollback {
-                        span style="color:#9aa0b5;" { "Type" }
+                        span style="color:var(--muted);" { "Type" }
                         span { "rollback" }
                     }
-                    span style="color:#9aa0b5;" { "Started" }
+                    span style="color:var(--muted);" { "Started" }
                     span { (relative_time(&deploy.started_at)) }
                     @if let Some(finished) = deploy.finished_at.as_deref() {
-                        span style="color:#9aa0b5;" { "Finished" }
+                        span style="color:var(--muted);" { "Finished" }
                         span { (relative_time(finished)) }
-                        span style="color:#9aa0b5;" { "Duration" }
+                        span style="color:var(--muted);" { "Duration" }
                         span { (duration(&deploy.started_at, finished)) }
                     }
                     @if let Some(err) = deploy.error.as_deref() {
-                        span style="color:#e74c3c;" { "Error" }
-                        span style="color:#e74c3c; font-family:monospace; white-space:pre-wrap;" { (err) }
+                        span style="color:var(--danger-text);" { "Error" }
+                        span style="color:var(--danger-text); font-family:var(--mono); white-space:pre-wrap;" { (err) }
                     }
                 }
 
@@ -176,7 +176,7 @@ pub fn deploy_detail_page(
                     a href=(format!("/deployments/{}/log/full", deploy.id))
                        target="_blank"
                        rel="noopener"
-                       style="font-size:0.85rem; color:#9aa0b5;" {
+                       style="font-size:0.85rem; color:var(--muted);" {
                         "View full log"
                     }
                 }
@@ -227,7 +227,7 @@ fn status_pill(status: &str) -> Markup {
 /// A small badge for the deploy trigger (manual / webhook / auto-start).
 fn trigger_badge(trigger: &str) -> Markup {
     html! {
-        span style="font-size:0.8rem; color:#9aa0b5; background:rgba(15,52,96,0.4); padding:0.15rem 0.5rem; border-radius:4px;" {
+        span style="font-size:0.8rem; color:var(--muted); background:var(--neutral-soft); padding:0.15rem 0.5rem; border-radius:4px;" {
             (trigger)
         }
     }

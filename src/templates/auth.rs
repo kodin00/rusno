@@ -24,7 +24,7 @@ pub fn setup_page() -> Markup {
                 h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;" {
                     "Welcome to rusno"
                 }
-                p style="color: #9aa0b5; margin-bottom: 1.25rem;" {
+                p style="color: var(--muted); margin-bottom: 1.25rem;" {
                     "Set your admin password to get started."
                 }
                 form method="post" action="/setup" {
@@ -62,13 +62,13 @@ pub fn login_page(error: Option<&str>) -> Markup {
         html! {
             div class="card" style="max-width: 28rem; margin: 3rem auto;" {
                 h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;" { "rusno" }
-                p style="color: #9aa0b5; margin-bottom: 1.25rem;" {
+                p style="color: var(--muted); margin-bottom: 1.25rem;" {
                     "Sign in to continue."
                 }
                 @if let Some(msg) = error {
                     div
-                        style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; \
-                            border: 1px solid rgba(231, 76, 60, 0.4); border-radius: 6px; \
+                        style="background: var(--danger-soft); color: var(--danger-text); \
+                            border: 1px solid rgba(220, 38, 38, 0.25); border-radius: var(--radius-sm); \
                             padding: 0.65rem 0.85rem; margin-bottom: 1rem; font-size: 0.9rem;"
                     {
                         (msg)

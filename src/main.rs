@@ -264,10 +264,7 @@ async fn cmd_serve(port: u16) -> Result<()> {
 /// Returns `None` if `id` is missing or its output is not a number — neither
 /// should happen on a normal Linux system.
 fn current_uid() -> Option<u32> {
-    let output = std::process::Command::new("id")
-        .arg("-u")
-        .output()
-        .ok()?;
+    let output = std::process::Command::new("id").arg("-u").output().ok()?;
     if !output.status.success() {
         return None;
     }
@@ -291,9 +288,7 @@ fn invoking_user() -> String {
         }
     }
     match std::process::Command::new("id").arg("-un").output() {
-        Ok(o) if o.status.success() => {
-            String::from_utf8_lossy(&o.stdout).trim().to_string()
-        }
+        Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).trim().to_string(),
         _ => "root".to_string(),
     }
 }
@@ -360,9 +355,7 @@ async fn service_install(port: u16) -> Result<()> {
 
     // Writing under /etc/systemd and calling enable/restart needs root.
     if current_uid() != Some(0) {
-        anyhow::bail!(
-            "rusno service install must run as root. Try: sudo rusno service install"
-        );
+        anyhow::bail!("rusno service install must run as root. Try: sudo rusno service install");
     }
 
     let user = invoking_user();
