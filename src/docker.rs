@@ -38,6 +38,19 @@ impl DockerClient {
         Ok(containers)
     }
 
+    /// List all running containers on the host (no label filter). Used by the
+    /// sidebar so the user can see *every* running container, not just the ones
+    /// rusno started. rusno-managed ones are still distinguishable via their
+    /// `rusno.project` label (see `templates::sidebar::container_row`).
+    pub async fn list_running_containers(&self) -> Result<Vec<ContainerSummary>> {
+        let opts = ListContainersOptions::<String> {
+            all: false,
+            ..Default::default()
+        };
+        let containers = self.docker.list_containers(Some(opts)).await?;
+        Ok(containers)
+    }
+
     /// Count running rusno-managed containers.
     pub async fn count_rusno_containers(&self) -> Result<usize> {
         Ok(self.list_rusno_containers().await?.len())

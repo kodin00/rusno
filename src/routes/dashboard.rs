@@ -141,7 +141,7 @@ pub async fn dashboard_recent_deploys(State(state): State<AppState>) -> Response
 /// rather than erroring the sidebar.
 pub async fn sidebar_containers() -> Response {
     let containers = match DockerClient::new().await {
-        Ok(client) => match client.list_rusno_containers().await {
+        Ok(client) => match client.list_running_containers().await {
             Ok(list) => list,
             Err(e) => {
                 tracing::debug!(error = %e, "sidebar: failed to list rusno containers");

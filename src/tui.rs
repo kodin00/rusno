@@ -195,7 +195,7 @@ impl TuiState {
         });
 
         self.containers = match DockerClient::new().await {
-            Ok(client) => client.list_rusno_containers().await.unwrap_or_else(|e| {
+            Ok(client) => client.list_running_containers().await.unwrap_or_else(|e| {
                 tracing::debug!(error = %e, "TUI: listing containers failed");
                 Vec::new()
             }),
