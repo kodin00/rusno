@@ -54,3 +54,10 @@ uuid = { version = "1", features = ["v4"] }
 once_cell = "1"
 dirs = "5"
 hex = "0.4"
+
+# TUI
+ratatui = "0.29"
+crossterm = "0.28"
+
+# Version comparison (self-update)
+semver = "1"

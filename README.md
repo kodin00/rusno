@@ -8,7 +8,7 @@
 curl -fsSL https://raw.githubusercontent.com/kodin00/rusno/master/install.sh | sudo sh
 ```
 
-Already have the binary? `sudo rusno service install` wires up the systemd service (auto-starts on boot).
+Already have the binary? `sudo rusno service install` wires up the systemd service (auto-starts on boot). To upgrade an existing install: `sudo rusno update`.
 
 This downloads the latest build from the [`latest` release](https://github.com/kodin00/rusno/releases/latest), installs the `rusno` binary to `/usr/local/bin`, wires up a systemd service, and runs first-run init. Then visit `http://localhost:6967` — you'll be redirected to the setup wizard. See [docs/install.md](./docs/install.md) for manual and Docker variants.
 
@@ -22,6 +22,8 @@ This downloads the latest build from the [`latest` release](https://github.com/k
 - Host telemetry (CPU/memory/storage), Docker cleanup (safe + nuclear prune).
 - SSH key management (rusno-managed ed25519 or host-existing via ssh-agent).
 - Optional GitHub token for private HTTPS clones, webhook auto-register, repo autocomplete.
+- Interactive terminal dashboard: run `rusno` (no subcommand) for a live TUI of projects, running containers, host telemetry, and recent deployments.
+- Self-update: `rusno update` checks GitHub for a newer release, confirms, and swaps the binary in place (restarts the systemd service if installed).
 
 ## Tech stack
 

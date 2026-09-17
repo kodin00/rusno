@@ -7,6 +7,8 @@ mod docker;
 mod models;
 mod routes;
 mod templates;
+mod tui;
+mod update;
 mod webhooks;
 
 use std::net::SocketAddr;
@@ -24,7 +26,7 @@ use crate::db::Db;
 #[command(name = "rusno", version, about = "Self-hosted deployment manager")]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -50,6 +52,10 @@ enum Commands {
         #[command(subcommand)]
         action: ServiceAction,
     },
+    /// Launch the interactive terminal dashboard (default when no subcommand is given)
+    Tui,
+    /// Check GitHub for a newer rusno release and self-update
+    Update,
 }
 
 #[derive(Subcommand)]
@@ -85,22 +91,25 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Init {
+        None => cmd_tui().await?,
+        Some(Commands::Init {
             admin_password,
             projects_root,
             port,
-        } => {
+        }) => {
             cmd_init(admin_password, projects_root, port).await?;
         }
-        Commands::Migrate => {
+        Some(Commands::Migrate) => {
             cmd_migrate().await?;
         }
-        Commands::Serve { port } => {
+        Some(Commands::Serve { port }) => {
             cmd_serve(port).await?;
         }
-        Commands::Service { action } => {
+        Some(Commands::Service { action }) => {
             cmd_service(action).await?;
         }
+        Some(Commands::Tui) => cmd_tui().await?,
+        Some(Commands::Update) => update::run_update(true).await?,
     }
 
     Ok(())
@@ -192,6 +201,19 @@ async fn cmd_migrate() -> Result<()> {
     db.run_migrations().await?;
     println!("Migrations complete.");
     Ok(())
+}
+
+/// Launch the interactive TUI dashboard. Requires `rusno init` to have run.
+async fn cmd_tui() -> Result<()> {
+    let data_dir = config::data_dir();
+    let rusno_home = data_dir.join(".rusno");
+    if !rusno_home.exists() {
+        anyhow::bail!(
+            "rusno home not found at {}. Run `rusno init` first.",
+            rusno_home.display()
+        );
+    }
+    tui::run(rusno_home).await
 }
 
 async fn cmd_serve(port: u16) -> Result<()> {

@@ -165,6 +165,76 @@ const CSS: &str = r#"
         font-weight: 600;
     }
 
+    /* ---------- Sidebar: containers section ----------
+       Sits below the nav with a top border separator. The wrapper in the
+       layout loads /sidebar/containers via HTMX and re-polls; the returned
+       fragment re-arms itself on each swap (see templates::sidebar). */
+    .sidebar-section {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        /* Cap height so a long container list never blows out the sidebar. */
+        max-height: 16rem;
+        overflow-y: auto;
+    }
+    .sidebar-section-head {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--faint);
+        padding: 0 0.55rem;
+    }
+    .sidebar-containers {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    .sidebar-container-item {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.35rem 0.55rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.82rem;
+        color: var(--text);
+        transition: background 0.15s ease;
+    }
+    .sidebar-container-item:hover { background: var(--neutral-soft); }
+    .sidebar-container-name {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .sidebar-container-name a { color: var(--accent); }
+    .sidebar-container-image {
+        flex: 0 0 auto;
+        font-size: 0.72rem;
+        color: var(--muted);
+        max-width: 5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .sidebar-muted {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+    .sidebar-dot {
+        flex: 0 0 auto;
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 999px;
+        background: var(--border-strong);
+    }
+    .sidebar-dot-running { background: var(--success-text); }
+
     /* ---------- Main ---------- */
     .container {
         flex: 1 1 auto;
@@ -427,6 +497,8 @@ const CSS: &str = r#"
         }
         .sidebar .brand { padding: 0 0.5rem; margin: 0 0.75rem 0 0; border: none; }
         .sidebar .nav { flex-direction: row; flex-wrap: wrap; gap: 0.15rem; }
+        /* Hide the containers panel on mobile to keep the collapsed top bar clean. */
+        .sidebar-section { display: none; }
         .container { padding: 1.25rem 1rem; }
     }
 "#;
@@ -462,6 +534,23 @@ pub fn nav(active_tab: &str) -> Markup {
             nav class="nav" {
                 @for (tab, href, label, icon) in &TABS {
                     (nav_link(tab, href, label, icon, active_tab))
+                }
+            }
+            // Sidebar containers panel — only on authenticated pages (login/
+            // setup pass an empty active_tab). Loads the fragment via HTMX
+            // on page load and re-polls every 10 s; the fragment itself also
+            // re-arms on each swap (see templates::sidebar::containers_fragment).
+            @if !active_tab.is_empty() {
+                div
+                    class="sidebar-section"
+                    id="sidebar-containers"
+                    hx-get="/sidebar/containers"
+                    hx-trigger="load, every 10s"
+                    hx-swap="innerHTML"
+                {
+                    // Placeholder shown until the first load completes.
+                    div class="sidebar-section-head" { "Containers" }
+                    div class="sidebar-muted" { "Loading…" }
                 }
             }
         }

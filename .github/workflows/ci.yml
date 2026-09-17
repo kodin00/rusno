@@ -37,6 +37,7 @@ jobs:
           set -euo pipefail
           gh release delete latest --yes --cleanup-tag 2>/dev/null || true
           version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
+          echo "$version" > dist/VERSION
           gh release create latest dist/* \
             --title "rusno v${version}" \
             --notes "rusno ${version}, built from $(git rev-parse --short HEAD)." \

@@ -18,6 +18,7 @@ use axum::response::{Html, IntoResponse, Response};
 use crate::auth::session_from_extensions;
 use crate::docker::{DockerClient, Telemetry};
 use crate::templates::dashboard as tpl;
+use crate::templates::sidebar;
 use crate::AppState;
 
 /// `GET /` — the main dashboard page.
@@ -130,4 +131,28 @@ pub async fn dashboard_recent_deploys(State(state): State<AppState>) -> Response
     };
 
     Html(tpl::recent_deploys_fragment(&deploys).into_string()).into_response()
+}
+
+/// `GET /sidebar/containers` — the sidebar running-containers list, polled
+/// every 10 s. Returns the [`sidebar::containers_fragment`] markup. No
+/// `State` needed: Docker is queried directly via `DockerClient::new()`.
+/// Degrades gracefully: if Docker is unreachable or no rusno containers are
+/// running, the fragment renders a muted "No running containers" line
+/// rather than erroring the sidebar.
+pub async fn sidebar_containers() -> Response {
+    let containers = match DockerClient::new().await {
+        Ok(client) => match client.list_rusno_containers().await {
+            Ok(list) => list,
+            Err(e) => {
+                tracing::debug!(error = %e, "sidebar: failed to list rusno containers");
+                Vec::new()
+            }
+        },
+        Err(e) => {
+            tracing::debug!(error = %e, "sidebar: docker unavailable");
+            Vec::new()
+        }
+    };
+
+    Html(sidebar::containers_fragment(&containers).into_string()).into_response()
 }

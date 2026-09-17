@@ -34,6 +34,9 @@ pub fn build_router(state: AppState) -> Router {
             "/dashboard/recent-deploys",
             get(dashboard::dashboard_recent_deploys),
         )
+        // Sidebar containers panel — auth-gated since container names/labels
+        // are only for logged-in users. Self-polls every 10 s from the layout.
+        .route("/sidebar/containers", get(dashboard::sidebar_containers))
         // Projects
         .route(
             "/projects",
